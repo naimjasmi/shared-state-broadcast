@@ -23,15 +23,18 @@ export default function HomePage() {
     }
   }, []);
 
+  //load dispatches from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('dispatches');
     if (saved) setDispatches(JSON.parse(saved));
   }, []);
 
+  //save dispatches to localStorage
   useEffect(() => {
     localStorage.setItem('dispatches', JSON.stringify(dispatches));
   }, [dispatches]);
 
+  //handle popup status communication
   useEffect(() => {
     const mapChannel = new BroadcastChannel('popup_status_map');
     const formChannel = new BroadcastChannel('popup_status_form');
@@ -71,25 +74,60 @@ export default function HomePage() {
     };
   }, []);
 
+  //receive new dispatch from popup form
   useEffect(() => {
     const formChannel = new BroadcastChannel('form_channel');
     formChannel.onmessage = (event) => {
       if (event.data?.type === 'new_dispatch') {
-        const { lat, lng, driverName } = event.data.payload;
-        handleNewDispatch({ lat, lng, driverName });
+        const { lat, lng, driverName, ...rest } = event.data.payload;
+        handleNewDispatch({ lat, lng, driverName, ...rest });
       }
     };
     return () => formChannel.close();
   }, [dispatches]);
 
-  const handleNewDispatch = ({ lat, lng, driverName }) => {
+  //sync deletion from map popup
+  useEffect(() => {
+    const mapChannel = new BroadcastChannel('map_channel');
+
+    mapChannel.onmessage = (event) => {
+      if (event.data?.type === 'delete_marker') {
+        const { lat, lng } = event.data.payload;
+
+        setDispatches((prev) =>
+          prev.filter((d) => {
+            const match = d.location.match(/Lat:\s*(-?\d+\.\d+),\s*Lng:\s*(-?\d+\.\d+)/);
+            if (!match) return true;
+            const dLat = parseFloat(match[1]);
+            const dLng = parseFloat(match[2]);
+            return dLat.toFixed(4) !== lat.toFixed(4) || dLng.toFixed(4) !== lng.toFixed(4);
+          })
+        );
+      }
+    };
+
+    return () => mapChannel.close();
+  }, []);
+
+  //create new dispatch and broadcast to map
+  const handleNewDispatch = (data) => {
     const newId = `D${(dispatches.length + 1).toString().padStart(3, '0')}`;
+
     const newDispatch = {
       id: newId,
-      driver: driverName || `Driver ${dispatches.length + 1}`,
-      location: `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`,
+      driver: data.driverName || `Driver ${dispatches.length + 1}`,
+      location: `Lat: ${data.lat.toFixed(4)}, Lng: ${data.lng.toFixed(4)}`,
       status: 'Pending',
       eta: 'Awaiting dispatch',
+      alertNo: data.alertNo || '',
+      timestamp: data.timestamp || new Date().toLocaleString(),
+      callerName: data.callerName || '',
+      phone: data.phone || '',
+      locationCode: data.locationCode || '',
+      district: data.district || '',
+      state: data.state || '',
+      locationNote: data.locationNote || '',
+      alertNote: data.alertNote || '',
     };
 
     setDispatches((prev) => [...prev, newDispatch]);
@@ -97,11 +135,18 @@ export default function HomePage() {
     const mapChannel = new BroadcastChannel('map_channel');
     mapChannel.postMessage({
       type: 'add_marker',
-      payload: { lat, lng },
+      payload: {
+        lat: data.lat,
+        lng: data.lng,
+        driverName: newDispatch.driver,
+        status: newDispatch.status,
+        dispatchId: newId,
+      },
     });
     mapChannel.close();
   };
 
+  //open form popup
   const openFormInNewWindow = () => {
     if (sessionStorage.getItem('form_popup') === 'true') return;
 

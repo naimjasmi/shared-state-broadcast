@@ -85,9 +85,20 @@ export default function DispatchList({ dispatches, setDispatches }) {
             <div style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '0.25rem' }}>
               {dispatch.id}
             </div>
-            <div><strong>Driver:</strong> {dispatch.driver}</div>
-            <div><strong>Location:</strong> {dispatch.location}</div>
-            <div><strong>ETA:</strong> {dispatch.eta}</div>
+
+            {dispatch.alertNo && <div><strong>Alert No:</strong> {dispatch.alertNo}</div>}
+            {dispatch.timestamp && <div><strong>Timestamp:</strong> {dispatch.timestamp}</div>}
+            {dispatch.driver && <div><strong>Driver:</strong> {dispatch.driver}</div>}
+            {dispatch.callerName && <div><strong>Caller Name:</strong> {dispatch.callerName}</div>}
+            {dispatch.phone && <div><strong>Phone:</strong> {dispatch.phone}</div>}
+            {dispatch.location && <div><strong>Location:</strong> {dispatch.location}</div>}
+            {dispatch.locationCode && <div><strong>Location Code:</strong> {dispatch.locationCode}</div>}
+            {dispatch.district && <div><strong>District:</strong> {dispatch.district}</div>}
+            {dispatch.state && <div><strong>State:</strong> {dispatch.state}</div>}
+            {dispatch.locationNote && <div><strong>Location Note:</strong> {dispatch.locationNote}</div>}
+            {dispatch.alertNote && <div><strong>Alert Note:</strong> {dispatch.alertNote}</div>}
+            {dispatch.eta && <div><strong>ETA:</strong> {dispatch.eta}</div>}
+
             <div>
               <strong>Status:</strong>{' '}
               <span
