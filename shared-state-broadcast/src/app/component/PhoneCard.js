@@ -1,9 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import CTICallInfo from '../helper/CtiCallInfo';
+import HangupReasonSection from '../helper/HangUpReason';
+import SpeedDialSection from '../helper/SpeedDial';
 
 export default function PhoneCard() {
   const [timestamp, setTimestamp] = useState('');
+  const [selectedReason, setSelectedReason] = useState(null);
 
   useEffect(() => {
     setTimestamp(new Date().toLocaleString());
@@ -17,28 +21,16 @@ export default function PhoneCard() {
     timestamp,
   };
 
-  if (!timestamp) return null; 
+  const handleReasonSelect = (reason) => {
+    setSelectedReason(reason);
+    console.log('Hangup Reason selected:', reason);
+  };
 
   return (
-    <div
-      style={{
-        border: '1px solid #e5e7eb',
-        borderRadius: '12px',
-        padding: '1rem',
-        backgroundColor: '#f9fafb',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
-        fontSize: '0.9rem',
-        color: '#111827',
-      }}
-    >
-      <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.75rem' }}>
-        📞 CTI Call Info
-      </h3>
-      <div><strong>Caller ID:</strong> {ctiInfo.callerId}</div>
-      <div><strong>Call Type:</strong> {ctiInfo.callType}</div>
-      <div><strong>Duration:</strong> {ctiInfo.duration}</div>
-      <div><strong>Status:</strong> {ctiInfo.status}</div>
-      <div><strong>Timestamp:</strong> {ctiInfo.timestamp}</div>
+    <div>
+      <CTICallInfo ctiInfo={ctiInfo} />
+      <HangupReasonSection onSelect={handleReasonSelect} />
+      <SpeedDialSection onSelect={(val) => console.log('Speed Dial:', val)} />
     </div>
   );
 }
