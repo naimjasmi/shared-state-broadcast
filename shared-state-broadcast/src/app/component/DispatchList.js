@@ -1,6 +1,12 @@
-'use client';
+import { useState } from 'react';
 
-export default function DispatchList({ dispatches, setDispatches }) {
+export default function DispatchList({ dispatches, setDispatches, onSelect }) {
+  const [expandedId, setExpandedId] = useState(null);
+
+  const toggleDetails = (id) => {
+    setExpandedId((prevId) => (prevId === id ? null : id));
+  };
+
   const statusColor = {
     Pending: '#facc15',
     'On Route': '#22c55e',
@@ -31,15 +37,7 @@ export default function DispatchList({ dispatches, setDispatches }) {
   };
 
   return (
-    <div
-      style={{
-        flex: '1 1 350px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-        color: textColor,
-      }}
-    >
+    <div style={{ flex: '1 1 350px', display: 'flex', flexDirection: 'column', gap: '1rem', color: textColor }}>
       <h2 style={{ fontSize: '1.3rem', fontWeight: '600' }}>Active Dispatches</h2>
 
       {dispatches.length === 0 && (
@@ -50,18 +48,21 @@ export default function DispatchList({ dispatches, setDispatches }) {
 
       <div
         style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+          gap: '1rem',
           maxHeight: '530px',
           overflowY: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.75rem',
           paddingRight: '4px',
         }}
       >
         {dispatches.map((dispatch) => (
           <div
             key={dispatch.id}
+            onClick={() => onSelect(dispatch)}
             style={{
+              minWidth: '180px',
+              maxWidth: '200px',
               border: '1px solid #e5e7eb',
               borderRadius: '10px',
               padding: '0.75rem',
@@ -86,34 +87,38 @@ export default function DispatchList({ dispatches, setDispatches }) {
               {dispatch.id}
             </div>
 
-            {dispatch.alertNo && <div><strong>Alert No:</strong> {dispatch.alertNo}</div>}
-            {dispatch.timestamp && <div><strong>Timestamp:</strong> {dispatch.timestamp}</div>}
-            {dispatch.driver && <div><strong>Driver:</strong> {dispatch.driver}</div>}
-            {dispatch.callerName && <div><strong>Caller Name:</strong> {dispatch.callerName}</div>}
-            {dispatch.phone && <div><strong>Phone:</strong> {dispatch.phone}</div>}
-            {dispatch.location && <div><strong>Location:</strong> {dispatch.location}</div>}
-            {dispatch.locationCode && <div><strong>Location Code:</strong> {dispatch.locationCode}</div>}
-            {dispatch.district && <div><strong>District:</strong> {dispatch.district}</div>}
-            {dispatch.state && <div><strong>State:</strong> {dispatch.state}</div>}
-            {dispatch.locationNote && <div><strong>Location Note:</strong> {dispatch.locationNote}</div>}
-            {dispatch.alertNote && <div><strong>Alert Note:</strong> {dispatch.alertNote}</div>}
-            {dispatch.eta && <div><strong>ETA:</strong> {dispatch.eta}</div>}
+            {expandedId === dispatch.id && (
+              <div style={{ marginTop: '0.5rem' }}>
+                {dispatch.alertNo && <div><strong>Alert No:</strong> {dispatch.alertNo}</div>}
+                {dispatch.timestamp && <div><strong>Timestamp:</strong> {dispatch.timestamp}</div>}
+                {dispatch.driver && <div><strong>Driver:</strong> {dispatch.driver}</div>}
+                {dispatch.callerName && <div><strong>Caller Name:</strong> {dispatch.callerName}</div>}
+                {dispatch.phone && <div><strong>Phone:</strong> {dispatch.phone}</div>}
+                {dispatch.location && <div><strong>Location:</strong> {dispatch.location}</div>}
+                {dispatch.locationCode && <div><strong>Location Code:</strong> {dispatch.locationCode}</div>}
+                {dispatch.district && <div><strong>District:</strong> {dispatch.district}</div>}
+                {dispatch.state && <div><strong>State:</strong> {dispatch.state}</div>}
+                {dispatch.locationNote && <div><strong>Location Note:</strong> {dispatch.locationNote}</div>}
+                {dispatch.alertNote && <div><strong>Alert Note:</strong> {dispatch.alertNote}</div>}
+                {dispatch.eta && <div><strong>ETA:</strong> {dispatch.eta}</div>}
 
-            <div>
-              <strong>Status:</strong>{' '}
-              <span
-                style={{
-                  backgroundColor: statusColor[dispatch.status] || '#9ca3af',
-                  color: '#ffffff',
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  fontSize: '0.75rem',
-                  fontWeight: '500',
-                }}
-              >
-                {dispatch.status}
-              </span>
-            </div>
+                <div>
+                  <strong>Status:</strong>{' '}
+                  <span
+                    style={{
+                      backgroundColor: statusColor[dispatch.status] || '#9ca3af',
+                      color: '#ffffff',
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: '500',
+                    }}
+                  >
+                    {dispatch.status}
+                  </span>
+                </div>
+              </div>
+            )}
 
             <button
               onClick={(e) => {

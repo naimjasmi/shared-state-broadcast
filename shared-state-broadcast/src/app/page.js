@@ -11,6 +11,14 @@ export default function HomePage() {
   const [isMapPopupOpen, setIsMapPopupOpen] = useState(false);
   const [isFormPopupOpen, setIsFormPopupOpen] = useState(false);
   const [mode, setMode] = useState('loading');
+  const [selectedDispatch, setSelectedDispatch] = useState(null);
+  const handleSelectDispatch = (dispatch) => {
+    setSelectedDispatch(dispatch);
+
+    const channel = new BroadcastChannel('form_channel');
+    channel.postMessage({ type: 'prefill_form', payload: dispatch });
+    channel.close();
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -187,31 +195,66 @@ export default function HomePage() {
     <main
       style={{
         display: 'flex',
-        flexDirection: 'row',
-        padding: '2rem',
-        gap: '2rem',
         flexWrap: 'wrap',
+        gap: '2rem',
+        padding: '2rem',
         alignItems: 'flex-start',
+        justifyContent: 'flex-start',
       }}
     >
-      <div style={{ flex: '1 1 400px', minWidth: '300px' }}>
+      {/* PhoneCard */}
+      <div
+        style={{
+          flex: isMapPopupOpen ? '1 1 calc(50% - 2rem)' : '1 1 400px',
+          minWidth: '300px',
+          transition: 'all 0.3s ease',
+        }}
+      >
         <PhoneCard />
       </div>
 
+      {/* Map (Demo component) */}
       {!isMapPopupOpen && (
-        <div style={{ flex: '2 1 600px', minWidth: '400px' }}>
+        <div
+          style={{
+            flex: '2 1 600px',
+            minWidth: '400px',
+            transition: 'all 0.3s ease',
+          }}
+        >
           <Demo />
         </div>
       )}
 
+      {/* Form */}
       {!isFormPopupOpen && (
-        <div style={{ flex: '1 1 400px', minWidth: '300px' }}>
-          <CallCardForm onSubmit={handleNewDispatch} />
+        <div
+          style={{
+            flex: '1 1 500px',
+            minWidth: '350px',
+            transition: 'all 0.3s ease',
+          }}
+        >
+          <CallCardForm
+            onSubmit={handleNewDispatch}
+            selectedDispatch={selectedDispatch}
+          />
         </div>
       )}
 
-      <div style={{ flex: '1 1 400px', minWidth: '300px' }}>
-        <DispatchList dispatches={dispatches} setDispatches={setDispatches} />
+      {/* Dispatch List */}
+      <div
+        style={{
+          flex: isMapPopupOpen ? '1 1 calc(50% - 2rem)' : '1 1 400px',
+          minWidth: '300px',
+          transition: 'all 0.3s ease',
+        }}
+      >
+        <DispatchList
+          dispatches={dispatches}
+          setDispatches={setDispatches}
+          onSelect={handleSelectDispatch}
+        />
       </div>
     </main>
   );

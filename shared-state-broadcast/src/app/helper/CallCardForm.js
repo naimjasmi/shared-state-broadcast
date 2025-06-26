@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export default function CallCardForm({ onSubmit, isPopup = false }) {
+export default function CallCardForm({ onSubmit, isPopup = false, selectedDispatch = null }) {
   const [driver, setDriver] = useState('');
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
@@ -15,6 +15,7 @@ export default function CallCardForm({ onSubmit, isPopup = false }) {
   const [locationNote, setLocationNote] = useState('');
   const [alertNote, setAlertNote] = useState('');
   const [success, setSuccess] = useState(false);
+  const [isPrefilled, setIsPrefilled] = useState(false);
 
   const generateRandomCoordinates = () => {
     const randomLat = 2.92 + Math.random() * 0.06;
@@ -22,6 +23,56 @@ export default function CallCardForm({ onSubmit, isPopup = false }) {
     setLat(randomLat.toFixed(6));
     setLng(randomLng.toFixed(6));
   };
+
+  useEffect(() => {
+    const formChannel = new BroadcastChannel('form_channel');
+    formChannel.onmessage = (event) => {
+      if (event.data?.type === 'prefill_form') {
+        const d = event.data.payload;
+        setDriver(d.driver || '');
+        setAlertNo(d.alertNo || '');
+        setCallerName(d.callerName || '');
+        setPhone(d.phone || '');
+        setLocationCode(d.locationCode || '');
+        setDistrict(d.district || '');
+        setState(d.state || '');
+        setLocationNote(d.locationNote || '');
+        setAlertNote(d.alertNote || '');
+
+        const match = d.location?.match(/Lat:\s*(-?\d+\.\d+),\s*Lng:\s*(-?\d+\.\d+)/);
+        if (match) {
+          setLat(match[1]);
+          setLng(match[2]);
+        }
+
+        setIsPrefilled(true);
+      }
+    };
+
+    return () => formChannel.close();
+  }, []);
+
+  useEffect(() => {
+    if (selectedDispatch) {
+      setDriver(selectedDispatch.driver || '');
+      setAlertNo(selectedDispatch.alertNo || '');
+      setCallerName(selectedDispatch.callerName || '');
+      setPhone(selectedDispatch.phone || '');
+      setLocationCode(selectedDispatch.locationCode || '');
+      setDistrict(selectedDispatch.district || '');
+      setState(selectedDispatch.state || '');
+      setLocationNote(selectedDispatch.locationNote || '');
+      setAlertNote(selectedDispatch.alertNote || '');
+
+      const match = selectedDispatch.location?.match(/Lat:\s*(-?\d+\.\d+),\s*Lng:\s*(-?\d+\.\d+)/);
+      if (match) {
+        setLat(match[1]);
+        setLng(match[2]);
+      }
+
+      setIsPrefilled(true);
+    }
+  }, [selectedDispatch]);
 
   useEffect(() => {
     generateRandomCoordinates();
@@ -38,6 +89,7 @@ export default function CallCardForm({ onSubmit, isPopup = false }) {
     setLocationNote('');
     setAlertNote('');
     generateRandomCoordinates();
+    setIsPrefilled(false);
   };
 
   const handleDispatch = () => {
@@ -120,7 +172,6 @@ export default function CallCardForm({ onSubmit, isPopup = false }) {
         <input type="text" placeholder="State" value={state} onChange={(e) => setState(e.target.value)} style={inputStyle} />
         <input type="text" placeholder="Location Note" value={locationNote} onChange={(e) => setLocationNote(e.target.value)} style={inputStyle} />
         <input type="text" placeholder="Alert Note" value={alertNote} onChange={(e) => setAlertNote(e.target.value)} style={inputStyle} />
-
         <input
           type="text"
           placeholder="Latitude"
@@ -146,9 +197,23 @@ export default function CallCardForm({ onSubmit, isPopup = false }) {
           Generate Random Location
         </button>
 
-        <button type="button" onClick={handleDispatch} style={buttonStyleBlue}>
-          Submit Dispatch
-        </button>
+        {isPrefilled ? (
+          <button
+            type="button"
+            onClick={clearForm}
+            style={buttonStyleBlue}
+          >
+            Create New Dispatch
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleDispatch}
+            style={buttonStyleBlue}
+          >
+            Submit Dispatch
+          </button>
+        )}
 
         {!isPopup && (
           <button type="button" onClick={openFormInNewWindow} style={buttonStyleOpenPopup}>
