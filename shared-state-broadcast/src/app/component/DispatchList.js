@@ -24,6 +24,8 @@ export default function DispatchList({ dispatches, setDispatches, onSelect }) {
         const lat = parseFloat(matches[1]);
         const lng = parseFloat(matches[2]);
 
+        //te
+
         const channel = new BroadcastChannel('map_channel');
         channel.postMessage({
           type: 'delete_marker',
